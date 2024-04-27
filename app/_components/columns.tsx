@@ -7,22 +7,24 @@ import { type Task } from "../_constants/schema";
 import IndeterminateCheckbox from "@/components/ui/Indeterminate";
 import { CheckboxIcon } from "@radix-ui/react-icons";
 
+
 export const columns: Array<ColumnDef<Task>> = [
-  
+
     {
         accessorKey: "isSelected",
         header: ({ column }) => (
             <span className="h-4 w-4"> <CheckboxIcon /></span>
         ),
+        size: 80,
+        // maxSize: 105,
         cell: ({ row }) => (<div className="">
-            
             <IndeterminateCheckbox
-            {...{
-                checked: row.getIsSelected(),
-                disabled: !row.getCanSelect(),
-                indeterminate: row.getIsSomeSelected(),
-                onChange: row.getToggleSelectedHandler(),
-              }}
+                {...{
+                    checked: row.getIsSelected(),
+                    disabled: !row.getCanSelect(),
+                    indeterminate: row.getIsSomeSelected(),
+                    onChange: row.getToggleSelectedHandler(),
+                }}
             />
         </div>
         ),

@@ -9,6 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import {
+    Column,
     ColumnDef,
     ColumnResizeDirection,
     ColumnResizeMode,
@@ -18,12 +19,53 @@ import {
     useReactTable,
 } from "@tanstack/react-table";
 import { DataTablePagination } from "./data-table-pagination";
-import { useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
 }
+
+// const getCommonPinningStyles = (column: any): CSSProperties => {
+//     const isPinned = column.getIsPinned()
+//     const isLastLeftPinnedColumn =
+//       isPinned === 'left' && column.getIsLastColumn('left')
+//     const isFirstRightPinnedColumn =
+//       isPinned === 'right' && column.getIsFirstColumn('right')
+
+//     return {
+//       boxShadow: isLastLeftPinnedColumn
+//         ? '-4px 0 4px -4px gray inset'
+//         : isFirstRightPinnedColumn
+//           ? '4px 0 4px -4px gray inset'
+//           : undefined,
+//       left: `${column.getStart('left')}px`,
+//       opacity: isPinned ? 0.95 : 1,
+//       position: isPinned ? 'fixed' : 'relative',
+//       width: column.getSize(),
+//       zIndex: isPinned ? 1 : 0,
+//     }
+//   }
+const getCommonPinningStyles = (column: any): CSSProperties => {
+    // const {column} = header;
+    const isPinned = column.getIsPinned()
+    const isLastLeftPinnedColumn = column.getIsLastColumn('left')
+
+    return {
+        boxShadow: isLastLeftPinnedColumn
+            && '-4px 0 4px -4px gray inset',
+
+        // left: `${column.getStart('left')-2}px`,
+        left: `${column.id === 'isSelected' ? "-2" : "70"}px`,
+        backgroundColor: 'white',
+        opacity: isPinned ? 1 : 1,
+        position: isPinned ? 'sticky' : 'relative',
+        width: column.getSize(),
+        // borderRight: isPinned && '2px solid red',
+        zIndex: isPinned ? 1 : 0,
+    }
+}
+
 
 export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
 
@@ -43,6 +85,12 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
         state: {
             rowSelection: rowSelection
         },
+
+        enableColumnPinning: true,
+        initialState: {
+            columnPinning: { left: ['isSelected', 'id'] },
+        },
+
         onRowSelectionChange: setRowSelection,
         enableRowSelection: true,
         enableMultiRowSelection: false,
@@ -57,7 +105,8 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
 
     // TASK : Make first 2 columns (i.e. checkbox and task id) sticky
     // TASK : Make header columns resizable
-    
+    // completed all
+
 
     return (
         <div className="space-y-4">
@@ -65,54 +114,53 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                 <Table {...{
                     className: 'border border-gray-200',
                     style: {
-                        width: table.getCenterTotalSize(),
-                    },
+                        width: table.getTotalSize(),
+                    }
                 }}>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead {...{
-                                            key: header.id,
-                                            colSpan: header.colSpan,
-                                            style: {
-                                                width: header.getSize(),
-                                            },
-                                        }}>
+                                        <TableHead key={header.id}
+                                            colSpan={header.colSpan}
+                                            style={{ ...getCommonPinningStyles(header.column) }}
+                                        >
                                             <div className="flex justify-between">
 
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext(),
-                                                    
-                                                )}
-                                            <div
-                                                {...{
-                                                    onDoubleClick: () => header.column.resetSize(),
-                                                    onMouseDown: header.getResizeHandler(),
-                                                    onTouchStart: header.getResizeHandler(),
-                                                    className: `resizer ${table.options.columnResizeDirection
-                                                        } ${header.column.getIsResizing() ? 'isResizing' : ''
-                                                    }flex cursor-col-resize border-2 border-gray-600`,
-                                                    style: {
-                                                        transform:
-                                                        table.options.columnResizeMode === 'onEnd' &&
-                                                        header.column.getIsResizing()
-                                                        ? `translateX(${(table.options.columnResizeDirection ===
-                                                            'rtl'
-                                                            ? -1
-                                                            : 1) *
-                                                            (table.getState().columnSizingInfo
-                                                            .deltaOffset ?? 0)
-                                                        }px)`
-                                                        : '',
-                                                    },
-                                                }}
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext(),
+
+                                                    )
+
+                                                }
+                                                <div
+                                                    {...{
+                                                        onDoubleClick: () => header.column.resetSize(),
+                                                        onMouseDown: header.getResizeHandler(),
+                                                        onTouchStart: header.getResizeHandler(),
+                                                        className: `resizer ${table.options.columnResizeDirection
+                                                            } ${header.column.getIsResizing() ? 'isResizing' : ''
+                                                            }flex cursor-col-resize border-2 border-gray-600 hover:border-blue-600`,
+                                                        style: {
+                                                            transform:
+                                                                table.options.columnResizeMode === 'onEnd' &&
+                                                                    header.column.getIsResizing()
+                                                                    ? `translateX(${(table.options.columnResizeDirection ===
+                                                                        'rtl'
+                                                                        ? -1
+                                                                        : 1) *
+                                                                    (table.getState().columnSizingInfo
+                                                                        .deltaOffset ?? 0)
+                                                                    }px)`
+                                                                    : '',
+                                                        },
+                                                    }}
                                                 ></div>
-                                                </div>
+                                            </div>
                                         </TableHead>
                                     );
                                 })}
@@ -127,12 +175,10 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                                     data-state={row.getIsSelected() && "selected"}
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell {...{
-                                            key: cell.id,
-                                            style: {
-                                              width: cell.column.getSize(),
-                                            },
-                                          }} >
+                                        <TableCell
+                                            key={cell.id} // Ensure cell.id is unique for each Cell element
+                                            style={{ ...getCommonPinningStyles(cell.column) }}
+                                        >
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext(),
