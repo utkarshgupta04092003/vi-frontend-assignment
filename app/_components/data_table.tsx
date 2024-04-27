@@ -16,18 +16,34 @@ import {
     useReactTable,
 } from "@tanstack/react-table";
 import { DataTablePagination } from "./data-table-pagination";
+import { useEffect, useState } from "react";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data}: DataTableProps<TData, TValue>) {
+    
+    const [rowSelection, setRowSelection] = useState({})
+
+    // check which row is selected currently
+    // useEffect(()=>{
+    //     console.log(rowSelection);
+    // }, [rowSelection]);
+
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        state: {
+            rowSelection: rowSelection
+        },
+        onRowSelectionChange: setRowSelection,
+        enableRowSelection: true,
+        enableMultiRowSelection: false, 
+        
     });
 
     // TASK : Make first 2 columns (i.e. checkbox and task id) sticky

@@ -4,8 +4,29 @@ import { Badge } from "@/components/ui/badge";
 import { type ColumnDef } from "@tanstack/react-table";
 import { labels, priorities, statuses } from "../_constants/metadata";
 import { type Task } from "../_constants/schema";
+import IndeterminateCheckbox from "@/components/ui/Indeterminate";
+import { CheckboxIcon } from "@radix-ui/react-icons";
 
 export const columns: Array<ColumnDef<Task>> = [
+  
+    {
+        accessorKey: "isSelected",
+        header: ({ column }) => (
+            <span className="h-4 w-4"> <CheckboxIcon /></span>
+        ),
+        cell: ({ row }) => (<div className="flex justify-center">
+            
+            <IndeterminateCheckbox
+            {...{
+                checked: row.getIsSelected(),
+                disabled: !row.getCanSelect(),
+                indeterminate: row.getIsSomeSelected(),
+                onChange: row.getToggleSelectedHandler(),
+              }}
+            />
+        </div>
+        ),
+    },
     {
         accessorKey: "id",
         header: ({ column }) => <span>Task</span>,
