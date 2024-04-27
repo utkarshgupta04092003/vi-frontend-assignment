@@ -14,7 +14,7 @@ export const columns: Array<ColumnDef<Task>> = [
         header: ({ column }) => (
             <span className="h-4 w-4"> <CheckboxIcon /></span>
         ),
-        cell: ({ row }) => (<div className="flex justify-center">
+        cell: ({ row }) => (<div className="">
             
             <IndeterminateCheckbox
             {...{

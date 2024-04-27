@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/table";
 import {
     ColumnDef,
+    ColumnResizeDirection,
+    ColumnResizeMode,
     flexRender,
     getCoreRowModel,
     getPaginationRowModel,
@@ -23,8 +25,8 @@ interface DataTableProps<TData, TValue> {
     data: TData[];
 }
 
-export function DataTable<TData, TValue>({ columns, data}: DataTableProps<TData, TValue>) {
-    
+export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+
     const [rowSelection, setRowSelection] = useState({})
 
     // check which row is selected currently
@@ -37,34 +39,80 @@ export function DataTable<TData, TValue>({ columns, data}: DataTableProps<TData,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        // select row features
         state: {
             rowSelection: rowSelection
         },
         onRowSelectionChange: setRowSelection,
         enableRowSelection: true,
-        enableMultiRowSelection: false, 
-        
+        enableMultiRowSelection: false,
+        // column resize features
+        columnResizeMode: 'onChange',
+        columnResizeDirection: 'ltr',
+        debugTable: true,
+        debugHeaders: true,
+        debugColumns: true,
+
     });
 
     // TASK : Make first 2 columns (i.e. checkbox and task id) sticky
     // TASK : Make header columns resizable
+    
 
     return (
         <div className="space-y-4">
             <div className="rounded-md border">
-                <Table>
+                <Table {...{
+                    className: 'border border-gray-200',
+                    style: {
+                        width: table.getCenterTotalSize(),
+                    },
+                }}>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id} colSpan={header.colSpan}>
+                                        <TableHead {...{
+                                            key: header.id,
+                                            colSpan: header.colSpan,
+                                            style: {
+                                                width: header.getSize(),
+                                            },
+                                        }}>
+                                            <div className="flex justify-between">
+
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
-                                                      header.column.columnDef.header,
-                                                      header.getContext(),
-                                                  )}
+                                                    header.column.columnDef.header,
+                                                    header.getContext(),
+                                                    
+                                                )}
+                                            <div
+                                                {...{
+                                                    onDoubleClick: () => header.column.resetSize(),
+                                                    onMouseDown: header.getResizeHandler(),
+                                                    onTouchStart: header.getResizeHandler(),
+                                                    className: `resizer ${table.options.columnResizeDirection
+                                                        } ${header.column.getIsResizing() ? 'isResizing' : ''
+                                                    }flex cursor-col-resize border-2 border-gray-600`,
+                                                    style: {
+                                                        transform:
+                                                        table.options.columnResizeMode === 'onEnd' &&
+                                                        header.column.getIsResizing()
+                                                        ? `translateX(${(table.options.columnResizeDirection ===
+                                                            'rtl'
+                                                            ? -1
+                                                            : 1) *
+                                                            (table.getState().columnSizingInfo
+                                                            .deltaOffset ?? 0)
+                                                        }px)`
+                                                        : '',
+                                                    },
+                                                }}
+                                                ></div>
+                                                </div>
                                         </TableHead>
                                     );
                                 })}
@@ -79,7 +127,12 @@ export function DataTable<TData, TValue>({ columns, data}: DataTableProps<TData,
                                     data-state={row.getIsSelected() && "selected"}
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell {...{
+                                            key: cell.id,
+                                            style: {
+                                              width: cell.column.getSize(),
+                                            },
+                                          }} >
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext(),
